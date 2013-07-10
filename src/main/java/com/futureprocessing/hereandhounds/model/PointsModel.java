@@ -1,9 +1,9 @@
 package com.futureprocessing.hereandhounds.model;
 
-import com.futureprocessing.hereandhounds.util.augmentedreality.appunta.android.location.LocationFactory;
-import com.futureprocessing.hereandhounds.util.augmentedreality.appunta.android.point.Point;
-import com.futureprocessing.hereandhounds.util.augmentedreality.appunta.android.point.impl.SimplePoint;
-import com.futureprocessing.hereandhounds.util.augmentedreality.appunta.android.point.renderer.PointRenderer;
+import com.futureprocessing.hereandhounds.augmentedreality.appunta.android.location.LocationFactory;
+import com.futureprocessing.hereandhounds.augmentedreality.appunta.android.point.Point;
+import com.futureprocessing.hereandhounds.augmentedreality.appunta.android.point.impl.SimplePoint;
+import com.futureprocessing.hereandhounds.augmentedreality.appunta.android.point.renderer.PointRenderer;
 
 import java.util.ArrayList;
 import java.util.List;
