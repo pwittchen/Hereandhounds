@@ -6,7 +6,7 @@ import com.futureprocessing.hereandhounds.imagerecognition.recognizeim.Recognize
 
 public class TakePictureTask extends AsyncTask<String, String, String> {
 
-    RecognizeImHelper recognizeImHelper;
+    private RecognizeImHelper recognizeImHelper;
 
     public TakePictureTask(RecognizeImHelper recognizeImHelper) {
         this.recognizeImHelper = recognizeImHelper;
