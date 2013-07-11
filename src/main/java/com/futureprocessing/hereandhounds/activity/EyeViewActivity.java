@@ -161,6 +161,10 @@ public class EyeViewActivity extends Activity implements OnOrientationChangedLis
         this.pointIsNearEnough = locationHelper.setLocationListenerMock(currentLocation, eyeViewPoints, viewHolder.tvLocationOutput, this);
     }
 
+    private void executeTakePictureTask() {
+        new TakePictureTask(recognizeImHelper).execute();
+    }
+
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
@@ -220,7 +224,7 @@ public class EyeViewActivity extends Activity implements OnOrientationChangedLis
     public boolean onSingleTapUp(MotionEvent e) {
         Log.d(LOG_TAG, "onSingleTapUp - Glass: tap");
         if (pointIsNearEnough) {
-            new TakePictureTask(recognizeImHelper).execute();
+            executeTakePictureTask();
         }
         return false;
     }
@@ -249,7 +253,7 @@ public class EyeViewActivity extends Activity implements OnOrientationChangedLis
     @Override
     public boolean onKeyDown(int keycode, KeyEvent event) {
         if (keycode == KeyEvent.KEYCODE_MENU && pointIsNearEnough) {
-            new TakePictureTask(recognizeImHelper).execute();
+            executeTakePictureTask();
             return true;
         }
         return super.onKeyDown(keycode, event);
