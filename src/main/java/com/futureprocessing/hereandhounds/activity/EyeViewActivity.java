@@ -1,22 +1,15 @@
-package com.futureprocessing.hereandhounds;
+package com.futureprocessing.hereandhounds.activity;
 
-import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.res.Configuration;
-import android.graphics.Bitmap;
-import android.hardware.Camera;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
-import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.KeyEvent;
@@ -25,6 +18,7 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.futureprocessing.hereandhounds.R;
 import com.futureprocessing.hereandhounds.augmentedreality.AppuntaBuilder;
 import com.futureprocessing.hereandhounds.augmentedreality.AppuntaUtils;
 import com.futureprocessing.hereandhounds.augmentedreality.appunta.android.orientation.Orientation;
@@ -38,26 +32,21 @@ import com.futureprocessing.hereandhounds.augmentedreality.appunta.android.ui.Ap
 import com.futureprocessing.hereandhounds.augmentedreality.appunta.android.ui.CameraView;
 import com.futureprocessing.hereandhounds.augmentedreality.appunta.android.ui.EyeView;
 import com.futureprocessing.hereandhounds.augmentedreality.appunta.android.ui.RadarView;
+import com.futureprocessing.hereandhounds.imagerecognition.recognizeim.RecognizeImHelper;
 import com.futureprocessing.hereandhounds.location.LocationHelper;
 import com.futureprocessing.hereandhounds.model.PointsModel;
 import com.futureprocessing.hereandhounds.ui.DialogHelper;
+import com.futureprocessing.hereandhounds.ui.viewholders.EyeViewActivityViewHolder;
 
-import java.io.ByteArrayOutputStream;
 import java.util.List;
-
-import pl.itraff.TestApi.ItraffApi.ItraffApi;
 
 public class EyeViewActivity extends Activity implements OnOrientationChangedListener, OnPointPressedListener, GestureDetector.OnGestureListener {
 
+    public static final String LOG_TAG = "EyeViewActivity";
     private static final String EMPTY_STRING = "";
-    private static final String LOG_TAG = "EyeViewActivity";
     private boolean pointIsNearEnough = false;
 
-    private EyeView eyeView;
-    private RadarView radarView;
-    private CameraView camera;
-    private FrameLayout cameraFrame;
-    private TextView tvLocationOutput;
+    private EyeViewActivityViewHolder viewHolder;
 
     private List<Point> eyeViewPoints;
     private List<Point> radarPoints;
@@ -69,13 +58,9 @@ public class EyeViewActivity extends Activity implements OnOrientationChangedLis
 
     private GestureDetector gestureDetector;
 
+    private RecognizeImHelper recognizeImHelper;
     private DialogHelper dialogHelper;
     private ProgressDialog waitDialog;
-
-    private String CLIENT_API_KEY = ""; // get it from https://www.recognize.im/
-    private Integer CLIENT_API_ID = 0; // get it from https://www.recognize.im/
-
-    private static final int RESULT_BMP_DAMAGED = 128;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -89,16 +74,18 @@ public class EyeViewActivity extends Activity implements OnOrientationChangedLis
         initializeAugmentedReality();
         initializeCamera();
         initializeLocationHelper();
+        initializeRecognizeImHelper();
         initializeCurrentLocation();
         initializeLocationManager();
         setLocationListenerMock();
     }
 
     private void initializeViews() {
-        eyeView = (EyeView) findViewById(R.id.augmentedView);
-        radarView = (RadarView) findViewById(R.id.radarView);
-        tvLocationOutput = (TextView) findViewById(R.id.tv_location_output);
-        cameraFrame = (FrameLayout) findViewById(R.id.cameraFrame);
+        viewHolder = new EyeViewActivityViewHolder();
+        viewHolder.eyeView = (EyeView) findViewById(R.id.augmentedView);
+        viewHolder.radarView = (RadarView) findViewById(R.id.radarView);
+        viewHolder.tvLocationOutput = (TextView) findViewById(R.id.tv_location_output);
+        viewHolder.cameraFrame = (FrameLayout) findViewById(R.id.cameraFrame);
     }
 
     private void initializeGestureDetector() {
@@ -121,12 +108,12 @@ public class EyeViewActivity extends Activity implements OnOrientationChangedLis
 
     private void initializeAugmentedReality() {
         AppuntaBuilder appuntaBuilder = new AppuntaBuilder();
-        appuntaBuilder.activity(this).compass(compass).eyeView(eyeView).radarView(radarView).eyeViewPoints(eyeViewPoints).radarPoints(radarPoints).build();
+        appuntaBuilder.activity(this).compass(compass).eyeView(viewHolder.eyeView).radarView(viewHolder.radarView).eyeViewPoints(eyeViewPoints).radarPoints(radarPoints).build();
     }
 
     private void initializeCamera() {
-        camera = new CameraView(this);
-        cameraFrame.addView(camera);
+        viewHolder.cameraView = new CameraView(this);
+        viewHolder.cameraFrame.addView(viewHolder.cameraView);
     }
 
     private void initializeCurrentLocation() {
@@ -141,16 +128,28 @@ public class EyeViewActivity extends Activity implements OnOrientationChangedLis
         locationHelper = new LocationHelper();
     }
 
+    private void initializeRecognizeImHelper() {
+        recognizeImHelper = new RecognizeImHelper(this);
+    }
+
     public void setCurrentLocation(Location currentLocation) {
         this.currentLocation = currentLocation;
     }
 
     public EyeView getEyeView() {
-        return eyeView;
+        return viewHolder.eyeView;
     }
 
     public RadarView getRadarView() {
-        return radarView;
+        return viewHolder.radarView;
+    }
+
+    public CameraView getCameraView() {
+        return viewHolder.cameraView;
+    }
+
+    public DialogHelper getDialogHelper() {
+        return dialogHelper;
     }
 
     private void setLocationListener() {
@@ -158,7 +157,7 @@ public class EyeViewActivity extends Activity implements OnOrientationChangedLis
     }
 
     private void setLocationListenerMock() {
-        this.pointIsNearEnough = locationHelper.setLocationListenerMock(currentLocation, eyeViewPoints, tvLocationOutput, this);
+        this.pointIsNearEnough = locationHelper.setLocationListenerMock(currentLocation, eyeViewPoints, viewHolder.tvLocationOutput, this);
     }
 
     @Override
@@ -180,9 +179,9 @@ public class EyeViewActivity extends Activity implements OnOrientationChangedLis
 
     @Override
     public void onOrientationChanged(Orientation orientation) {
-        eyeView.setOrientation(orientation);
-        eyeView.setPhoneRotation(OrientationManager.getPhoneRotation(this));
-        radarView.setOrientation(orientation);
+        viewHolder.eyeView.setOrientation(orientation);
+        viewHolder.eyeView.setPhoneRotation(OrientationManager.getPhoneRotation(this));
+        viewHolder.radarView.setOrientation(orientation);
     }
 
     @Override
@@ -220,7 +219,7 @@ public class EyeViewActivity extends Activity implements OnOrientationChangedLis
     public boolean onSingleTapUp(MotionEvent e) {
         Log.d(LOG_TAG, "onSingleTapUp - Glass: tap");
         if (pointIsNearEnough) {
-            takePicture();
+            recognizeImHelper.takePicture();
         }
         return false;
     }
@@ -246,91 +245,18 @@ public class EyeViewActivity extends Activity implements OnOrientationChangedLis
         return true;
     }
 
+    @Override
     public boolean onKeyDown(int keycode, KeyEvent event) {
         if (keycode == KeyEvent.KEYCODE_MENU && pointIsNearEnough) {
-            takePicture();
+            recognizeImHelper.takePicture();
             return true;
         }
         return super.onKeyDown(keycode, event);
     }
 
-    private void takePicture() {
-        boolean clientIdAndApiKeyAreFilledIn = CLIENT_API_KEY != null && CLIENT_API_KEY.length() > 0 && CLIENT_API_ID != null && CLIENT_API_ID > 0;
-        if (clientIdAndApiKeyAreFilledIn) {
-            camera.getCamera().takePicture(null, null, new Camera.PictureCallback() {
-                @Override
-                public void onPictureTaken(byte[] bytes, Camera camera) {
-                    Log.d(LOG_TAG, "takePicture()");
-                    camera.startPreview();
-                    if (ItraffApi.isOnline(getApplicationContext())) {
-                        dialogHelper.showWaitDialog();
-                        ItraffApi api = new ItraffApi(CLIENT_API_ID, CLIENT_API_KEY, LOG_TAG, true);
-                        api.setMode(ItraffApi.MODE_SINGLE);
-                        api.sendPhoto(bytes, itraffApiHandler, false);
-                    } else {
-                        Toast.makeText(getApplicationContext(), "Not connected", Toast.LENGTH_LONG).show();
-                    }
-                }
-            });
-        } else {
-            Toast.makeText(getApplicationContext(), "Fill in Your Client Id and API Key", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    @SuppressLint("HandlerLeak")
-    private Handler itraffApiHandler = new Handler() {
-        // callback from api
-        @Override
-        public void handleMessage(Message msg) {
-            dialogHelper.dismissWaitDialog();
-            Bundle data = msg.getData();
-            if (data != null) {
-                Integer status = data.getInt(ItraffApi.STATUS, -1);
-                String response = data.getString(ItraffApi.RESPONSE);
-                // status ok
-                if (status == 0) {
-                    Toast.makeText(getApplicationContext(), response.toString(), Toast.LENGTH_LONG).show();
-                    // application error (for example timeout)
-                } else if (status == -1) {
-                    Toast.makeText(getApplicationContext(), "API error", Toast.LENGTH_LONG).show();
-                    // error from api
-                } else {
-                    Toast.makeText(getApplicationContext(), "Error: " + response, Toast.LENGTH_LONG).show();
-                }
-            }
-        }
-    };
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (resultCode == Activity.RESULT_OK) {
-            if (data != null) {
-                Bundle bundle = data.getExtras();
-                if (bundle != null) {
-                    Bitmap image = (Bitmap) bundle.get("data");
-                    if (image != null) {
-                        if (ItraffApi.isOnline(getApplicationContext())) {
-                            dialogHelper.showWaitDialog();
-                            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
-                            ItraffApi api = new ItraffApi(CLIENT_API_ID, CLIENT_API_KEY, LOG_TAG, true);
-                            if (prefs.getString("mode", "single").equals("multi")) {
-                                api.setMode(ItraffApi.MODE_MULTI);
-                            } else {
-                                api.setMode(ItraffApi.MODE_SINGLE);
-                            }
-                            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                            image.compress(Bitmap.CompressFormat.JPEG, 100, stream);
-                            byte[] pictureData = stream.toByteArray();
-                            api.sendPhoto(pictureData, itraffApiHandler, prefs.getBoolean("allResults", true));
-                        } else {
-                            Toast.makeText(getApplicationContext(), "not connected", Toast.LENGTH_LONG).show();
-                        }
-                    }
-                }
-            }
-        } else if (resultCode == RESULT_BMP_DAMAGED) {
-            Log.d(LOG_TAG, "RESULT_BMP_DAMAGED");
-        }
+        recognizeImHelper.onActivityResultCalled(requestCode, resultCode, data);
     }
 
 }

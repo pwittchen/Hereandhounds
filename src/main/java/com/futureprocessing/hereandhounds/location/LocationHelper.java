@@ -8,11 +8,10 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
 
-import com.futureprocessing.hereandhounds.EyeViewActivity;
-import com.futureprocessing.hereandhounds.augmentedreality.AppuntaDefaults;
+import com.futureprocessing.hereandhounds.activity.EyeViewActivity;
+import com.futureprocessing.hereandhounds.augmentedreality.AppuntaConstants;
 import com.futureprocessing.hereandhounds.augmentedreality.appunta.android.location.LocationFactory;
 import com.futureprocessing.hereandhounds.augmentedreality.appunta.android.point.Point;
-import com.futureprocessing.hereandhounds.augmentedreality.appunta.android.ui.EyeView;
 
 import java.util.List;
 
@@ -47,9 +46,9 @@ public class LocationHelper {
     }
 
     public boolean setLocationListenerMock(Location currentLocation, List<Point> eyeViewPoints, TextView tvLocationOutput, Activity activity) {
-        currentLocation.setLatitude(AppuntaDefaults.DEFAULT_LATITUDE);
-        currentLocation.setLongitude(AppuntaDefaults.DEFAULT_LONGITUDE);
-        currentLocation.setAltitude(AppuntaDefaults.DEFAULT_ALTITUDE);
+        currentLocation.setLatitude(AppuntaConstants.DEFAULT_LATITUDE);
+        currentLocation.setLongitude(AppuntaConstants.DEFAULT_LONGITUDE);
+        currentLocation.setAltitude(AppuntaConstants.DEFAULT_ALTITUDE);
 
         for (Point point : eyeViewPoints)
             if (point.getLocation().distanceTo(currentLocation) < 800) {
