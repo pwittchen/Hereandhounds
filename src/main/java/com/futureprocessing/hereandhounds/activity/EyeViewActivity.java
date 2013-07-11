@@ -35,6 +35,7 @@ import com.futureprocessing.hereandhounds.augmentedreality.appunta.android.ui.Ra
 import com.futureprocessing.hereandhounds.imagerecognition.recognizeim.RecognizeImHelper;
 import com.futureprocessing.hereandhounds.location.LocationHelper;
 import com.futureprocessing.hereandhounds.model.PointsModel;
+import com.futureprocessing.hereandhounds.task.TakePictureTask;
 import com.futureprocessing.hereandhounds.ui.DialogHelper;
 import com.futureprocessing.hereandhounds.ui.viewholders.EyeViewActivityViewHolder;
 
@@ -219,7 +220,7 @@ public class EyeViewActivity extends Activity implements OnOrientationChangedLis
     public boolean onSingleTapUp(MotionEvent e) {
         Log.d(LOG_TAG, "onSingleTapUp - Glass: tap");
         if (pointIsNearEnough) {
-            recognizeImHelper.takePicture();
+            new TakePictureTask(recognizeImHelper).execute();
         }
         return false;
     }
@@ -248,7 +249,7 @@ public class EyeViewActivity extends Activity implements OnOrientationChangedLis
     @Override
     public boolean onKeyDown(int keycode, KeyEvent event) {
         if (keycode == KeyEvent.KEYCODE_MENU && pointIsNearEnough) {
-            recognizeImHelper.takePicture();
+            new TakePictureTask(recognizeImHelper).execute();
             return true;
         }
         return super.onKeyDown(keycode, event);
