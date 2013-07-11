@@ -14,8 +14,6 @@ import android.util.Log;
 import android.view.GestureDetector;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
-import android.widget.FrameLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.futureprocessing.hereandhounds.R;
@@ -68,7 +66,7 @@ public class EyeViewActivity extends Activity implements OnOrientationChangedLis
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_eyeview);
         setPoints();
-        initializeViews();
+        initializeViewHolder();
         initializeProgressDialog();
         initializeGestureDetector();
         initializeCompass();
@@ -81,12 +79,8 @@ public class EyeViewActivity extends Activity implements OnOrientationChangedLis
         setLocationListenerMock();
     }
 
-    private void initializeViews() {
-        viewHolder = new EyeViewActivityViewHolder();
-        viewHolder.eyeView = (EyeView) findViewById(R.id.augmentedView);
-        viewHolder.radarView = (RadarView) findViewById(R.id.radarView);
-        viewHolder.tvLocationOutput = (TextView) findViewById(R.id.tv_location_output);
-        viewHolder.cameraFrame = (FrameLayout) findViewById(R.id.cameraFrame);
+    private void initializeViewHolder() {
+        viewHolder = new EyeViewActivityViewHolder(this);
     }
 
     private void initializeGestureDetector() {
