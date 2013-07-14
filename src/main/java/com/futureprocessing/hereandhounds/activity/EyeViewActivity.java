@@ -65,7 +65,7 @@ public class EyeViewActivity extends Activity implements OnOrientationChangedLis
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_eyeview);
-        setPoints();
+        initializeAndsetPoints();
         initializeViewHolder();
         initializeProgressDialog();
         initializeGestureDetector();
@@ -76,7 +76,19 @@ public class EyeViewActivity extends Activity implements OnOrientationChangedLis
         initializeRecognizeImHelper();
         initializeCurrentLocation();
         initializeLocationManager();
-        setLocationListenerMock();
+        initializeLocationListenerMock();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        compass.stopSensor();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onStart();
+        compass.startSensor(this);
     }
 
     private void initializeViewHolder() {
@@ -95,7 +107,7 @@ public class EyeViewActivity extends Activity implements OnOrientationChangedLis
         compass = new OrientationManager(this);
     }
 
-    private void setPoints() {
+    private void initializeAndsetPoints() {
         PointRenderer eyeViewRenderer = new EyeViewRenderer(getResources(), R.drawable.circle_selected, R.drawable.circle_unselected);
         eyeViewPoints = PointsModel.getPoints(eyeViewRenderer);
         radarPoints = PointsModel.getPoints(new SimplePointRenderer());
@@ -147,11 +159,11 @@ public class EyeViewActivity extends Activity implements OnOrientationChangedLis
         return dialogHelper;
     }
 
-    private void setLocationListener() {
+    private void initializeLocationListener() {
         locationHelper.setLocationListener(currentLocation, locationManager, this);
     }
 
-    private void setLocationListenerMock() {
+    private void initializeLocationListenerMock() {
         this.pointIsNearEnough = locationHelper.setLocationListenerMock(currentLocation, eyeViewPoints, viewHolder.tvLocationOutput, this);
     }
 
@@ -162,18 +174,6 @@ public class EyeViewActivity extends Activity implements OnOrientationChangedLis
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        compass.stopSensor();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onStart();
-        compass.startSensor(this);
     }
 
     @Override
